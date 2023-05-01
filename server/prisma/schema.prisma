@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Employee {
+  id        String           @id @default(cuid())
+  firstName String
+  lastName  String
+  email     String           @unique
+  team      String
+  role      String
+  level     Level
+  status    Status
+  picture   String
+  skills    EmployeeSkills[]
+  interests Interest[]       @relation("EmployeeInterests")
+  groups    Group[]          @relation("EmployeeGroups")
+}
+
+model EmployeeSkills {
+  id         String    @id @default(cuid())
+  rating     Int
+  skill      Skill?    @relation(fields: [skillId], references: [id])
+  employee   Employee? @relation(fields: [employeeId], references: [id])
+  skillId    String?
+  employeeId String?
+}
+
+model Skill {
+  id        String           @id @default(cuid())
+  name      String           @unique
+  employees EmployeeSkills[]
+}
+
+model Interest {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  employees Employee[] @relation("EmployeeInterests")
+}
+
+model Group {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  employees Employee[] @relation("EmployeeGroups")
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+  AWAY
+  BUSY
+}
+
+enum Level {
+  BASIC
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
