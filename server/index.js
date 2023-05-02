@@ -18,7 +18,7 @@ app.use(cors());
 // handling errors
 
 // routes
-app.use("employees", employeesRoutes);
+app.use("/employees", employeesRoutes);
 
 // start server
 const DB_PORT = process.env.DB_PORT || 6001;

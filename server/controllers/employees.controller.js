@@ -7,6 +7,11 @@ export const getEmployee = async (req, res) => {
       where: {
         id: id,
       },
+      include: {
+        skills: true,
+        interests: true,
+        groups: true,
+      },
     });
     res.status(200).json(employee);
   } catch (error) {
