@@ -8,7 +8,11 @@ export const getEmployee = async (req, res) => {
         id: id,
       },
       include: {
-        skills: true,
+        skills: {
+          include: {
+            skill: true,
+          },
+        },
         interests: true,
         groups: true,
       },
