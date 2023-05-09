@@ -2,9 +2,14 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // import routes
 import employeesRoutes from "./routes/employees.routes.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config(); //
 const app = express();
@@ -18,6 +23,7 @@ app.use(cors());
 // handling errors
 
 // routes
+app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 app.use("/employees", employeesRoutes);
 
 // start server

@@ -1,8 +1,7 @@
+import React from "react";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { createTheme } from "@mui/material/styles";
-import { themeSettings } from "./theme";
-import { useMemo } from "react";
+import { theme } from "./theme";
 
 import EmployeeProfile from "./components/EmployeeProfile";
 
@@ -12,10 +11,12 @@ function App() {
   return (
     <div className="app">
       <BrowserRouter>
-        <CssBaseline />
-        <Routes>
-          <Route path="/employee/:id" element={<EmployeeProfile />} />
-        </Routes>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <Routes>
+            <Route path="/employee/:id" element={<EmployeeProfile />} />
+          </Routes>
+        </ThemeProvider>
       </BrowserRouter>
     </div>
   );
