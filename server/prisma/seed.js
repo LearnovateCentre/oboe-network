@@ -4,48 +4,79 @@ import prisma from "./client.js";
 async function seed() {
   console.log("Seeding database...");
 
-  for (const employee of employees) {
-    const { skills, interests, groups, ...employeeData } = employee;
+  try {
+    await prisma.$transaction(async (prisma) => {
+      const promises = employees.map(async (employee) => {
+        const { skills, interests, groups, ...employeeData } = employee;
 
-    const newEmployee = await prisma.employee.create({
-      data: {
-        ...employeeData,
-        skills: {
-          create: skills.map((skill) => ({
-            ...skill,
-            skill: {
-              connectOrCreate: {
-                where: { name: skill.skill.name },
-                create: { name: skill.skill.name },
-              },
+        const newEmployee = await prisma.employee.create({
+          data: {
+            ...employeeData,
+            skills: {
+              create: skills.map((skill) => ({
+                ...skill,
+                skill: {
+                  connectOrCreate: {
+                    where: { name: skill.skill.name },
+                    create: { name: skill.skill.name },
+                  },
+                },
+              })),
             },
-          })),
-        },
-        interests: {
-          create: interests.map((interest) => ({
-            name: interest.name,
-          })),
-        },
-        groups: {
-          create: groups.map((group) => ({
-            name: group.name,
-          })),
-        },
-      },
-    });
+            interests: {
+              connectOrCreate: interests.map((interest) => ({
+                where: { name: interest.name },
+                create: {
+                  name: interest.name,
+                  tags: {
+                    connectOrCreate: interest.tags.map((tag) => ({
+                      where: { name: tag.name },
+                      create: { name: tag.name },
+                    })),
+                  },
+                },
+              })),
+            },
+            groups: {
+              connectOrCreate: groups.map((group) => ({
+                where: { name: group.name },
+                create: {
+                  name: group.name,
+                  tags: {
+                    connectOrCreate: group.tags.map((tag) => ({
+                      where: { name: tag.name },
+                      create: { name: tag.name },
+                    })),
+                  },
+                },
+              })),
+            },
+          },
+          include: {
+            skills: true,
+            interests: true,
+            groups: true,
+          },
+        });
 
-    console.log(`Created employee with email: ${newEmployee.email}`);
+        console.log(`Created employee with email: ${newEmployee.email}`);
+      });
+      await Promise.all(promises);
+    });
+  } catch (e) {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
   }
 
   console.log("Done seeding database.");
 }
 
 seed()
-  .then(async () => {
-    await prisma.$disconnect();
-  })
-  .catch(async (e) => {
+  .catch((e) => {
     console.error(e);
-    await prisma.$disconnect();
     process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
   });

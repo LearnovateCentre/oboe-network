@@ -10,6 +10,7 @@ CREATE TABLE "Employee" (
     "firstName" TEXT NOT NULL,
     "lastName" TEXT NOT NULL,
     "email" TEXT NOT NULL,
+    "onboardee" BOOLEAN NOT NULL DEFAULT false,
     "team" TEXT NOT NULL,
     "role" TEXT NOT NULL,
     "level" "Level" NOT NULL,
@@ -54,6 +55,14 @@ CREATE TABLE "Group" (
 );
 
 -- CreateTable
+CREATE TABLE "Tag" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+
+    CONSTRAINT "Tag_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_EmployeeInterests" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL
@@ -61,6 +70,18 @@ CREATE TABLE "_EmployeeInterests" (
 
 -- CreateTable
 CREATE TABLE "_EmployeeGroups" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "_InterestTags" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "_GroupTags" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL
 );
@@ -78,6 +99,9 @@ CREATE UNIQUE INDEX "Interest_name_key" ON "Interest"("name");
 CREATE UNIQUE INDEX "Group_name_key" ON "Group"("name");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Tag_name_key" ON "Tag"("name");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "_EmployeeInterests_AB_unique" ON "_EmployeeInterests"("A", "B");
 
 -- CreateIndex
@@ -88,6 +112,18 @@ CREATE UNIQUE INDEX "_EmployeeGroups_AB_unique" ON "_EmployeeGroups"("A", "B");
 
 -- CreateIndex
 CREATE INDEX "_EmployeeGroups_B_index" ON "_EmployeeGroups"("B");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_InterestTags_AB_unique" ON "_InterestTags"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_InterestTags_B_index" ON "_InterestTags"("B");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_GroupTags_AB_unique" ON "_GroupTags"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_GroupTags_B_index" ON "_GroupTags"("B");
 
 -- AddForeignKey
 ALTER TABLE "EmployeeSkills" ADD CONSTRAINT "EmployeeSkills_skillId_fkey" FOREIGN KEY ("skillId") REFERENCES "Skill"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -106,3 +142,15 @@ ALTER TABLE "_EmployeeGroups" ADD CONSTRAINT "_EmployeeGroups_A_fkey" FOREIGN KE
 
 -- AddForeignKey
 ALTER TABLE "_EmployeeGroups" ADD CONSTRAINT "_EmployeeGroups_B_fkey" FOREIGN KEY ("B") REFERENCES "Group"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_InterestTags" ADD CONSTRAINT "_InterestTags_A_fkey" FOREIGN KEY ("A") REFERENCES "Interest"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_InterestTags" ADD CONSTRAINT "_InterestTags_B_fkey" FOREIGN KEY ("B") REFERENCES "Tag"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_GroupTags" ADD CONSTRAINT "_GroupTags_A_fkey" FOREIGN KEY ("A") REFERENCES "Group"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_GroupTags" ADD CONSTRAINT "_GroupTags_B_fkey" FOREIGN KEY ("B") REFERENCES "Tag"("id") ON DELETE CASCADE ON UPDATE CASCADE;
