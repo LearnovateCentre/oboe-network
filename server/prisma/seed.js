@@ -9,6 +9,17 @@ async function seed() {
       const promises = employees.map(async (employee) => {
         const { skills, interests, groups, ...employeeData } = employee;
 
+        const existingEmployee = await prisma.employee.findUnique({
+          where: { email: employeeData.email },
+        });
+
+        if (existingEmployee) {
+          console.log(
+            `Employee with email: ${employeeData.email} already exists. Skipping...`
+          );
+          return;
+        }
+
         const newEmployee = await prisma.employee.create({
           data: {
             ...employeeData,
@@ -51,11 +62,6 @@ async function seed() {
                 },
               })),
             },
-          },
-          include: {
-            skills: true,
-            interests: true,
-            groups: true,
           },
         });
 

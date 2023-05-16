@@ -9,6 +9,7 @@ import {
   Card,
   CardContent,
   Rating,
+  Button,
 } from "@mui/material";
 import Wrapper from "./Wrapper";
 import PanoramaFishEyeIcon from "@mui/icons-material/PanoramaFishEye";
@@ -17,20 +18,88 @@ import CircleIcon from "@mui/icons-material/Circle";
 const EmployeeProfile = () => {
   const { id } = useParams();
   const [employee, setEmployee] = useState(null);
+  const [matchingProfiles, setMatchingProfiles] = useState([]);
 
   useEffect(() => {
-    async function fetchEmployee() {
+    fetchEmployee();
+    fetchMatchingProfiles();
+  }, [id]);
+
+  const fetchEmployee = async () => {
+    try {
       const response = await fetch(`http://localhost:3001/employees/${id}`, {
         method: "GET",
       });
       const employee = await response.json();
       setEmployee(employee);
+    } catch (error) {
+      console.log(error);
     }
-    fetchEmployee();
-  }, [id]);
+  };
+
+  const fetchMatchingProfiles = async () => {
+    try {
+      const response = await fetch(`http://localhost:3001/employees`, {
+        method: "GET",
+      });
+      const employees = await response.json();
+
+      const matchingProfiles = employees
+        .filter((e) => e.id !== employee?.id) // Exclude current employee
+        .map((e) => ({
+          ...e,
+          score: calculateMatchingScore(employee, e),
+        }))
+        .filter((e) => e.score > 0.6);
+
+      setMatchingProfiles(matchingProfiles);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const calculateMatchingScore = (employeeA, employeeB) => {
+    let score = 0;
+    // Calculate score based on skills
+    const skillsA = employeeA?.skills.map((skill) => skill.skillId);
+    const skillsB = employeeB?.skills.map((skill) => skill.skillId);
+    console.log(skillsB);
+    const skillsInCommon = skillsA?.filter((skillId) =>
+      skillsB.includes(skillId)
+    );
+    score += skillsInCommon?.length * 0.5; // Assign 50% weight to skills
+    console.log(score);
+
+    return score;
+  };
+
+  console.log(matchingProfiles);
+
+  const addGroupToEmployee = async (groupId) => {
+    try {
+      const response = await fetch(`http://localhost:3001/employees/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          groupId: groupId,
+        }),
+      });
+
+      if (response.ok) {
+        // Refresh the employee data after successfully adding the group
+        fetchEmployee();
+      } else {
+        console.log("Failed to add group to employee.");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   if (!employee) return null;
-  // Instead of using employee.recommendedGroups directly, you can update the code to handle cases where recommendedGroups is undefined or empty.
+
   const recommendedGroups = employee.recommendedGroups || [];
 
   const {
@@ -168,7 +237,7 @@ const EmployeeProfile = () => {
             <Typography variant="h6" align="center" gutterBottom mt="3rem">
               MATCHES
             </Typography>
-            <Typography variant="subtitle1">
+            <Typography variant="subtitle1" gutterBottom>
               Groups & activities that match {firstName}&apos;s personal Profile
             </Typography>
             <Box
@@ -191,6 +260,16 @@ const EmployeeProfile = () => {
                 >
                   <CardContent>
                     <Typography variant="subtitle1">{group.name}</Typography>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => addGroupToEmployee(group.id)}
+                      sx={{
+                        marginTop: "1rem",
+                      }}
+                    >
+                      Add
+                    </Button>
                   </CardContent>
                 </Card>
               ))}
