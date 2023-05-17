@@ -15,6 +15,7 @@
 4. Move back to server and do same
 
 > cd .\server\
+>
 > npm install
 
 5. Create the database
@@ -32,6 +33,7 @@ Create the .env file for your environment variables for this project in server f
 Your .env file must contain:
 
 > DATABASE_URL="postgresql://<your user>:<your password>@localhost:5432/oboe?schema=public"
+>
 > DB_PORT=3001
 
 7. Initiate prisma migrations and config
@@ -49,5 +51,7 @@ Your .env file must contain:
 10. Start both server and client with
 
 > npm run dev
+>
 > cd ../client
+>
 > npm run dev
