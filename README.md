@@ -1,46 +1,53 @@
 # oboe-network
 
-VisualCode tool to clone the repository to your local machine (or run the appropriate command:
+1. Use VisualCode tool to clone the repository to your local machine (or run the appropriate command):
 
-git clone https://github.com/LearnovateCentre/oboe-network.git
+### git clone https://github.com/LearnovateCentre/oboe-network.git
 
-Move to client
+2. Move to client
 
-cd .\client\
+### cd .\client\
 
-Install dependencies and run
+3. Install dependencies and run
 
-npm install
-npm run dev -- --port 3001
+### npm install
 
-Do same with server
-Create the database
+4. Move back to server and do same
+
+### cd .\server\
+### npm install
+
+5. Create the database
 
 Open SQL Shell and enter the data for your postgreSQL configuration (as you have installed the PostgreSQL admin on your computer)
 
 CREATE DATABASE oboe
 
- or do it using pgAdmin tool.
+(or do it using pgAdmin tool).
+
+6. Set your environment variables
 
 Create the .env file for your environment variables for this project in server folder.
 
-Add DATABASE_URL variable to the env file with the Windows PowerShell
+Your .env file must contain:
 
-DATABASE_URL="postgresql://<your user>:<your password>@localhost:5432/oboe?schema=public"
-DB_PORT=3001
+### DATABASE_URL="postgresql://<your user>:<your password>@localhost:5432/oboe?schema=public"
+### DB_PORT=3001
 
+7. Initiate prisma migrations and config
 
-Initiate prisma migrations and config
+### npx prisma migrate dev --name init
 
+8. Install prisma studio. Run on the VisualCode terminal:
 
-npx prisma migrate dev --name init
+### npx prisma studio
 
-Install prisma studio. Run on the VisualCode terminal:
+9. Seed your database
 
+### npx prisma db seed
 
-npx prisma studio
+10. Start both server and client with
 
-Seed your database
-
-
-npx prisma db seed
+### npm run dev
+### cd ../client
+### npm run dev
