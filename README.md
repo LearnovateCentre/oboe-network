@@ -32,7 +32,7 @@ Create the .env file for your environment variables for this project in server f
 
 Your .env file must contain:
 
-> DATABASE_URL="postgresql://<your user>:<your password>@localhost:5432/oboe?schema=public"
+> DATABASE_URL="postgresql://**your user**:**your password**@localhost:5432/oboe?schema=public"
 >
 > DB_PORT=3001
 
