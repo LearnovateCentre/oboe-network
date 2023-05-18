@@ -1,0 +1,29 @@
+version: '3.6'
+
+services:
+  db:
+    image: postgres:10
+    container_name: postgres
+    restart: always
+    environment:
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=learnovat8
+        - POSTGRES_DB=oboe
+    volumes:
+      - "./postgresql/initdb:/docker-entrypoint-initdb.d"
+    ports:
+      - "5432:5432"
+  api:
+    build: ./server
+    container_name: api
+    ports:
+      - "3001:3001"
+    depends_on:
+      - db
+  app:
+    build: ./client
+    container_name: client
+    ports:
+      - "4300:3000"
+    depends_on:
+      - api
