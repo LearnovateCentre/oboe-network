@@ -4,10 +4,9 @@ FROM node:15.3-buster as builder
 WORKDIR /client
 
 # copy the package.json to install dependencies
-COPY package*.json /client/
-
+COPY package*.json ./
 # set space size to avoid memory issues
-ENV NODE_OPTIONS=--max_old_space_size=1024
+# ENV NODE_OPTIONS=--max_old_space_size=1024
 
 # The next lines may serve to solve dependencies issues
 
@@ -23,27 +22,27 @@ ENV NODE_OPTIONS=--max_old_space_size=1024
 #RUN npm --version
 #RUN node --version
 
-RUN npm i
+COPY ./ ./
 
-COPY . /client/
+RUN npm i
 
 # Build the project and copy the files
 RUN npm run build
 
-FROM nginx:1.20-alpine
+# FROM nginx:1.20-alpine
 
 #!/bin/sh
 
-COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
+# COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
 
 ## Remove default nginx index page
-RUN rm -rf /usr/share/nginx/html/*
+# RUN rm -rf /usr/share/nginx/html/*
 
 # Copy from the stage 1
-COPY --from=builder /client/build /usr/share/nginx/html
+# COPY --from=builder /client/build /usr/share/nginx/html
 
 EXPOSE 3000 8080
 
-ENTRYPOINT ["nginx", "-g", "daemon off;"]
+# ENTRYPOINT ["nginx", "-g", "daemon off;"]
 
-#CMD ["npm", "run", "start"]
+CMD ["npm", "run", "start"]
