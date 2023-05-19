@@ -10,19 +10,19 @@ services:
         - POSTGRES_PASSWORD=learnovat8
         - POSTGRES_DB=oboe
     volumes:
-      - "./postgresql/initdb:/docker-entrypoint-initdb.d"
+      - "./server/setup.sql:/docker-entrypoint-initdb.d/setup.sql"
     ports:
       - "5432:5432"
   api:
     build: ./server
-    container_name: api
+    container_name: oboe-api
     ports:
       - "3001:3001"
     depends_on:
       - db
   app:
     build: ./client
-    container_name: client
+    container_name: oboe-client
     ports:
       - "4300:3000"
     depends_on:

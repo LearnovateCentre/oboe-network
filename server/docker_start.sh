@@ -1,5 +1,5 @@
 #!sh
 
-npm run migrate --rebuild
+npx prisma migrate dev --name init
 
 npm start
