@@ -1,6 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
 import {
   Avatar,
   Box,
@@ -10,42 +9,100 @@ import {
   CardContent,
   Rating,
   Button,
+  Badge,
+  styled,
+  Chip,
 } from "@mui/material";
-import Wrapper from "./Wrapper";
 import PanoramaFishEyeIcon from "@mui/icons-material/PanoramaFishEye";
 import CircleIcon from "@mui/icons-material/Circle";
+import Add from "@mui/icons-material/Add";
+import Wrapper from "./Wrapper";
+import FlexBetween from "./FlexBetween";
+
+const getStatusColor = (status) => {
+  switch (status) {
+    case "ACTIVE":
+      return { backgroundColor: "green", color: "green" };
+    case "INACTIVE":
+      return { backgroundColor: "white", color: "none" };
+    case "AWAY":
+      return { backgroundColor: "yellow", color: "none" };
+    case "BUSY":
+      return { backgroundColor: "red", color: "none" };
+    default:
+      return { backgroundColor: "white", color: "none" };
+  }
+};
+
+const StyledBadge = styled(Badge)(({ status }) => ({
+  "& .MuiBadge-badge": {
+    width: "12px",
+    height: "12px",
+    borderRadius: "50%",
+    ...getStatusColor(status),
+    "&::after": {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      borderRadius: "50%",
+      animation:
+        status === "ACTIVE" ? "ripple 1.2s infinite ease-in-out" : "none",
+      border:
+        status === "ACTIVE"
+          ? "1px solid currentColor"
+          : status === "INACTIVE"
+          ? "1px solid grey"
+          : "none",
+      content: '""',
+    },
+  },
+  "@keyframes ripple": {
+    "0%": {
+      transform: "scale(.8)",
+      opacity: 1,
+    },
+    "100%": {
+      transform: "scale(2.4)",
+      opacity: 0,
+    },
+  },
+}));
 
 const EmployeeProfile = () => {
   const { id } = useParams();
   const [employee, setEmployee] = useState(null);
   const [matchingProfiles, setMatchingProfiles] = useState([]);
+  const API_BASE_URL = "http://localhost:3001/employees";
 
   useEffect(() => {
     fetchEmployee();
-    fetchMatchingProfiles();
   }, [id]);
 
   const fetchEmployee = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/employees/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/${id}`, {
         method: "GET",
       });
       const employee = await response.json();
       setEmployee(employee);
+
+      // Fetch matching profiles
+      fetchMatchingProfiles(employee);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const fetchMatchingProfiles = async () => {
+  const fetchMatchingProfiles = async (employee) => {
     try {
-      const response = await fetch(`http://localhost:3001/employees`, {
+      const response = await fetch(API_BASE_URL, {
         method: "GET",
       });
       const employees = await response.json();
-
       const matchingProfiles = employees
-        .filter((e) => e.id !== employee?.id) // Exclude current employee
+        .filter((e) => e.id !== employee.id) // Exclude current employee
         .map((e) => ({
           ...e,
           score: calculateMatchingScore(employee, e),
@@ -60,15 +117,33 @@ const EmployeeProfile = () => {
 
   const calculateMatchingScore = (employeeA, employeeB) => {
     let score = 0;
+
     // Calculate score based on skills
-    const skillsA = employeeA?.skills.map((skill) => skill.skillId);
-    const skillsB = employeeB?.skills.map((skill) => skill.skillId);
-    console.log(skillsB);
-    const skillsInCommon = skillsA?.filter((skillId) =>
+    const skillsA = employeeA.skills.map((skill) => skill.skillId);
+    const skillsB = employeeB.skills.map((skill) => skill.skillId);
+    const skillsInCommon = skillsA.filter((skillId) =>
       skillsB.includes(skillId)
     );
-    score += skillsInCommon?.length * 0.5; // Assign 50% weight to skills
-    console.log(score);
+
+    score += skillsInCommon.length * 0.5; // Assign 50% weight to skills
+
+    // Calculate score based on interests
+    const interestsA = employeeA.interests.map((interest) => interest.id);
+    const interestsB = employeeB.interests.map((interest) => interest.id);
+    const interestsInCommon = interestsA.filter((interestId) =>
+      interestsB.includes(interestId)
+    );
+
+    score += interestsInCommon.length * 0.3; // Assign 30% weight to interests
+
+    // Calculate score based on groups
+    const groupsA = employeeA.groups.map((group) => group.id);
+    const groupsB = employeeB.groups.map((group) => group.id);
+    const groupsInCommon = groupsA.filter((groupId) =>
+      groupsB.includes(groupId)
+    );
+    score += groupsInCommon.length * 0.2; // Assign 20% weight to groups
+    //console.log(score);
 
     return score;
   };
@@ -77,7 +152,7 @@ const EmployeeProfile = () => {
 
   const addGroupToEmployee = async (groupId) => {
     try {
-      const response = await fetch(`http://localhost:3001/employees/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -98,9 +173,31 @@ const EmployeeProfile = () => {
     }
   };
 
-  if (!employee) return null;
+  const saveMatchingProfiles = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/matchingEmployees`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          employeeId: id,
+          matchingProfiles: matchingProfiles,
+        }),
+      });
 
-  const recommendedGroups = employee.recommendedGroups || [];
+      if (response.ok) {
+        console.log("Successfully saved matching profiles.");
+        //setMatchingProfiles([]);
+      } else {
+        console.log("Failed to save matching profiles.");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  if (!employee) return null;
 
   const {
     firstName,
@@ -113,6 +210,7 @@ const EmployeeProfile = () => {
     picture,
     skills,
     interests,
+    recommendedGroups,
   } = employee;
 
   return (
@@ -134,7 +232,7 @@ const EmployeeProfile = () => {
             gap={2}
           >
             <Avatar
-              alt={employee.firstName}
+              alt={firstName}
               src={`http://localhost:3001/assets/${picture}`}
               sx={{ width: 56, height: 56 }}
             />
@@ -198,13 +296,65 @@ const EmployeeProfile = () => {
                 <Divider />
               </Box>
             ))}
-
             <Typography variant="h6" align="center" gutterBottom mt="3rem">
               MATCHES
             </Typography>
-            <Typography variant="subtitle1">
+            <Typography variant="subtitle1" gutterBottom>
               Employees who match {firstName}&apos;s profile
             </Typography>
+            <Box
+              display="grid"
+              gridTemplateColumns="repeat(5, minmax(0, 1fr))"
+              gap={2}
+              width="100%"
+              maxWidth="400px"
+              justifyItems="center"
+              marginBottom={1}
+            >
+              {matchingProfiles.map((profile) => (
+                <Box key={profile.id} textAlign="center">
+                  <StyledBadge
+                    status={profile.status}
+                    overlap="circular"
+                    anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                    variant="dot"
+                  >
+                    <Avatar
+                      alt={profile.firstName}
+                      src={`http://localhost:3001/assets/${profile.picture}`}
+                      sx={{ width: 56, height: 56 }}
+                    />
+                  </StyledBadge>
+                  <Typography variant="subtitle1">
+                    {profile.firstName}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+            <Divider />
+            <FlexBetween marginY={0.5}>
+              <Typography variant="subtitle1">
+                Add People to {firstName}&apos;s Network
+              </Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                sx={{
+                  borderRadius: "50%",
+                  minWidth: "0",
+                  width: "40px",
+                  height: "40px",
+                  "&:hover": {
+                    pointer: "cursor",
+                  },
+                }}
+                onClick={saveMatchingProfiles}
+              >
+                <Add />
+              </Button>
+            </FlexBetween>
+
+            <Divider />
           </Wrapper>
           <Wrapper flex={1}>
             <Typography variant="h6" align="center" gutterBottom>
@@ -235,8 +385,23 @@ const EmployeeProfile = () => {
             </Box>
 
             <Typography variant="h6" align="center" gutterBottom mt="3rem">
-              MATCHES
+              GROUPS
             </Typography>
+            <Typography variant="subtitle1" gutterBottom>
+              Groups {firstName} is a member of:
+            </Typography>
+            <Box
+              display="flex"
+              justifyContent="flex-start"
+              flexWrap="wrap"
+              gap={1}
+              my={1}
+            >
+              {employee.groups.map((group) => (
+                <Chip key={group.id} label={group.name} />
+              ))}
+            </Box>
+
             <Typography variant="subtitle1" gutterBottom>
               Groups & activities that match {firstName}&apos;s personal Profile
             </Typography>
@@ -248,30 +413,41 @@ const EmployeeProfile = () => {
             >
               {/* Fetch and display recommended groups based on employee interests */}
               {recommendedGroups.map((group) => (
-                <Card
+                <Box
                   key={group.id}
                   sx={{
-                    height: "100%",
                     display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    minHeight: "130px",
+                    flexDirection: "column",
+                    height: "100%",
                   }}
                 >
-                  <CardContent>
-                    <Typography variant="subtitle1">{group.name}</Typography>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => addGroupToEmployee(group.id)}
-                      sx={{
-                        marginTop: "1rem",
-                      }}
-                    >
-                      Add
-                    </Button>
-                  </CardContent>
-                </Card>
+                  <Card
+                    sx={{
+                      flex: 1,
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <CardContent>
+                      <Typography variant="subtitle1">{group.name}</Typography>
+                    </CardContent>
+                  </Card>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => addGroupToEmployee(group.id)}
+                    sx={{
+                      marginTop: "0.5rem",
+                      width: "100%",
+                      "&:hover": {
+                        pointer: "cursor",
+                      },
+                    }}
+                  >
+                    <Add /> Add
+                  </Button>
+                </Box>
               ))}
             </Box>
           </Wrapper>

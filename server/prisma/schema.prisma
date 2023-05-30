@@ -11,19 +11,21 @@ datasource db {
 }
 
 model Employee {
-  id        String           @id @default(cuid())
-  firstName String
-  lastName  String
-  email     String           @unique
-  onboardee Boolean          @default(false)
-  team      String
-  role      String
-  level     Level
-  status    Status
-  picture   String
-  skills    EmployeeSkills[]
-  interests Interest[]       @relation("EmployeeInterests")
-  groups    Group[]          @relation("EmployeeGroups")
+  id               String             @id @default(cuid())
+  firstName        String
+  lastName         String
+  email            String             @unique
+  onboardee        Boolean            @default(false)
+  team             String
+  role             String
+  level            Level
+  status           Status
+  picture          String
+  skills           EmployeeSkills[]
+  interests        Interest[]         @relation("EmployeeInterests")
+  groups           Group[]            @relation("EmployeeGroups")
+  Employee         MatchingEmployee[] @relation("Employee")
+  MatchingEmployee MatchingEmployee[] @relation("MatchingEmployee")
 }
 
 model EmployeeSkills {
@@ -60,6 +62,15 @@ model Tag {
   name      String     @unique
   interests Interest[] @relation("InterestTags")
   groups    Group[]    @relation("GroupTags")
+}
+
+model MatchingEmployee {
+  id                 String   @id @default(cuid())
+  score              Float
+  employee           Employee @relation("Employee", fields: [employeeId], references: [id])
+  matchingEmployee   Employee @relation("MatchingEmployee", fields: [matchingEmployeeId], references: [id])
+  employeeId         String
+  matchingEmployeeId String
 }
 
 enum Status {

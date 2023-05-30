@@ -113,3 +113,48 @@ export const updateEmployee = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const saveMatchingEmployees = async (req, res) => {
+  try {
+    const { employeeId, matchingProfiles } = req.body;
+
+    const savedProfiles = await prisma.matchingEmployee.createMany({
+      data: matchingProfiles.map((profile) => ({
+        employeeId: employeeId,
+        matchingEmployeeId: profile.id,
+        score: profile.score,
+      })),
+      skipDuplicates: true,
+    });
+
+    res.status(200).json({ message: "Matching profiles saved successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to save matching profiles" });
+  }
+};
+
+export const getMatchingEmployees = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(id);
+
+    const matchingEmployees = await prisma.matchingEmployee.findMany({
+      where: {
+        employeeId: id,
+      },
+      select: {
+        score: true,
+        matchingEmployee: {
+          select: {
+            team: true,
+            picture: true,
+          },
+        },
+      },
+    });
+
+    res.status(200).json(matchingEmployees);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch matching profiles" });
+  }
+};
