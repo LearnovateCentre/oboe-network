@@ -2,15 +2,15 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "index.ts",
   "type": "module",
   "scripts": {
-    "dev": "nodemon index.js",
-    "start": "npm run build && node index.js",
+    "dev": "nodemon index.ts",
+    "start": "npm run build && ts-node-esm index.ts",
     "build": "tsc --project ./"
   },
   "prisma": {
-    "seed": "node prisma/seed.js"
+    "seed": "ts-node-esm prisma/seed.ts"
   },
   "engines": {
     "node": ">=16.17.1"
@@ -21,10 +21,10 @@
   "dependencies": {
     "@prisma/client": "^4.13.0",
     "@types/express": "^4.17.17",
-    "@types/node": "^20.2.1",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "import-meta-resolve": "^3.0.0",
     "morgan": "^1.10.0",
     "ts-build": "^0.2.0",
     "ts-node": "^10.9.1",
@@ -33,6 +33,10 @@
     "webpack-cli": "^5.1.1"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.13",
+    "@types/dotenv": "^8.2.0",
+    "@types/morgan": "^1.9.4",
+    "@types/node": "^20.2.3",
     "nodemon": "^2.0.22",
     "prisma": "^4.13.0"
   }

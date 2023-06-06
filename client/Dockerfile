@@ -1,7 +1,7 @@
-# stage1 as builder
-FROM node:15.3-buster as builder
+# stage1: Build the React App as builder
+FROM node:15.3-buster as build
 
-WORKDIR /client
+WORKDIR /app
 
 # copy the package.json to install dependencies
 COPY package*.json ./
@@ -18,31 +18,30 @@ COPY package*.json ./
 #RUN . ~/.profile
 #RUN nvm install 16.13.2
 #RUN nvm use 16.13.2
-#RUN npm install -g node@16.13.2 -f
-#RUN npm --version
-#RUN node --version
+RUN npm install -g node@16.13.2 -f
+RUN npm --version
+RUN node --version
+RUN npm install
 
-COPY ./ ./
-
-RUN npm i
+COPY . .
 
 # Build the project and copy the files
 RUN npm run build
 
-# FROM nginx:1.20-alpine
+FROM nginx:1.21-alpine
+
+## Remove default nginx index page
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy from the stage 1
+COPY --from=build /app/dist /usr/share/nginx/html
 
 #!/bin/sh
 
-# COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
+COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
 
-## Remove default nginx index page
-# RUN rm -rf /usr/share/nginx/html/*
+EXPOSE 80
 
-# Copy from the stage 1
-# COPY --from=builder /client/build /usr/share/nginx/html
+ENTRYPOINT ["nginx", "-g", "daemon off;"]
 
-EXPOSE 3000 8080
-
-# ENTRYPOINT ["nginx", "-g", "daemon off;"]
-
-CMD ["npm", "run", "start"]
+# CMD ["npm", "run", "dev"]

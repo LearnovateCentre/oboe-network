@@ -24,6 +24,8 @@ services:
     build: ./client
     container_name: oboe-client
     ports:
-      - "4300:3000"
+      - "3000:80"
     depends_on:
       - api
+    stdin_open: true
+    tty: true

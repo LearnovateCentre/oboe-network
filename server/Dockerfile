@@ -1,6 +1,6 @@
 # Check out https://hub.docker.com/_/node to select a new base image
-FROM node:10-slim
-# FROM node:15.3-buster AS build
+# FROM node:10-slim
+FROM node:15.3-buster AS build
 
 # Set to a non-root built-in user `node`
 # USER node
@@ -22,14 +22,14 @@ WORKDIR /usr/src/app
 # RUN npm install -g node@16.13.2
 RUN npm --version
 RUN node --version
-RUN npm install
+# RUN npm install
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 # where available (npm@5+)
 COPY --chown=node package*.json ./
 
-# RUN npm install
+RUN npm install
 
 # Bundle app source code
 COPY --chown=node . .
