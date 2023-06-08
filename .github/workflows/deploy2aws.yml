@@ -73,4 +73,6 @@ jobs:
 
       - name: Deploy Docker image
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.LIGHTSAIL_INSTANCE_IP }} 'docker-compose pull && docker-compose up -d'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.LIGHTSAIL_INSTANCE_IP }} 'docker pull oboe-client && docker run -d -p 3000:80 oboe-client'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.LIGHTSAIL_INSTANCE_IP }} 'docker pull oboe-client && docker run -d -p 3001:3001 oboe-api'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.LIGHTSAIL_INSTANCE_IP }} 'docker pull oboe-client && docker run -d -p 5432:5432 postgres'
