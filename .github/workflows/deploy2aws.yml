@@ -46,7 +46,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.SECRETKEY_AWS }}
           aws-region: eu-west-1
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+
       - name: Build and push Docker image
+      
         run: |
           docker build -t postgres ./server
           docker tag postgres 262288775997.dkr.ecr.us-east-1.amazonaws.com/oboe-network/postgres:lastest
