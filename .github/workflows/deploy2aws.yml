@@ -49,20 +49,20 @@ jobs:
       - name: Build and push Docker image
         run: |
           docker build -t postgres .
-          docker tag postgres <REGISTRY_URL>/postgres:lastest
-          docker push <REGISTRY_URL>/postgres:latest
+          docker tag postgres 262288775997.dkr.ecr.us-east-1.amazonaws.com/oboe-network/postgres:lastest
+          docker push 262288775997.dkr.ecr.us-east-1.amazonaws.com/oboe-network/postgres:latest
 
       - name: Build and push Docker image
         run: |
           docker build -t oboe-api .
-          docker tag postgres <REGISTRY_URL>/oboe-api:latest
-          docker push <REGISTRY_URL>/oboe-api:lastest
+          docker tag postgres 262288775997.dkr.ecr.us-east-1.amazonaws.com/oboe-network/oboe-api:latest
+          docker push 262288775997.dkr.ecr.us-east-1.amazonaws.com/oboe-network/oboe-api:lastest
           
       - name: Build and push Docker image
         run: |
           docker build -t oboe-client .
-          docker tag postgres <REGISTRY_URL>/oboe-client:lastest
-          docker push <REGISTRY_URL>/oboe-client:lastest
+          docker tag postgres 262288775997.dkr.ecr.us-east-1.amazonaws.com/oboe-network/oboe-client:lastest
+          docker push 262288775997.dkr.ecr.us-east-1.amazonaws.com/oboe-network/oboe-client:lastest
 
       - name: SSH into Lightsail instance
         uses: appleboy/ssh-action@master
@@ -73,6 +73,4 @@ jobs:
 
       - name: Deploy Docker image
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.LIGHTSAIL_INSTANCE_IP }} 'docker pull oboe-client && docker run -d -p 3000:80 oboe-client'
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.LIGHTSAIL_INSTANCE_IP }} 'docker pull oboe-client && docker run -d -p 3001:3001 oboe-api'
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.LIGHTSAIL_INSTANCE_IP }} 'docker pull oboe-client && docker run -d -p 5432:5432 postgres'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.LIGHTSAIL_INSTANCE_IP }} 'docker-compose pull && docker-compose up -d'
