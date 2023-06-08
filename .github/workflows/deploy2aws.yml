@@ -33,7 +33,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -50,12 +50,6 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 15.3.0     
-      
-      - name: Build and push Docker image
-        run: |
-          docker build -t postgres ./server
-          docker tag postgres 262288775997.dkr.ecr.us-east-1.amazonaws.com/oboe-network/postgres:latest
-          docker push 262288775997.dkr.ecr.us-east-1.amazonaws.com/oboe-network/postgres:lastest
       
       - name: Build and push Docker image
         run: |
