@@ -48,19 +48,19 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker build -t postgres .
+          docker build -t postgres ./server
           docker tag postgres 262288775997.dkr.ecr.us-east-1.amazonaws.com/oboe-network/postgres:lastest
           docker push 262288775997.dkr.ecr.us-east-1.amazonaws.com/oboe-network/postgres:latest
 
       - name: Build and push Docker image
         run: |
-          docker build -t oboe-api .
+          docker build -t oboe-api ./server
           docker tag postgres 262288775997.dkr.ecr.us-east-1.amazonaws.com/oboe-network/oboe-api:latest
           docker push 262288775997.dkr.ecr.us-east-1.amazonaws.com/oboe-network/oboe-api:lastest
           
       - name: Build and push Docker image
         run: |
-          docker build -t oboe-client .
+          docker build -t oboe-client ./client
           docker tag postgres 262288775997.dkr.ecr.us-east-1.amazonaws.com/oboe-network/oboe-client:lastest
           docker push 262288775997.dkr.ecr.us-east-1.amazonaws.com/oboe-network/oboe-client:lastest
 
