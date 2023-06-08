@@ -54,7 +54,7 @@ jobs:
       - name: Build and push Docker image
         run: |
           docker build -t oboe-api ./server
-          docker tag postgres 262288775997.dkr.ecr.us-east-1.amazonaws.com/oboe-network/oboe-api:latest
+          docker tag oboe-api 262288775997.dkr.ecr.us-east-1.amazonaws.com/oboe-network/oboe-api:latest
           docker push 262288775997.dkr.ecr.us-east-1.amazonaws.com/oboe-network/oboe-api:lastest
           
       - name: Build and push Docker image
