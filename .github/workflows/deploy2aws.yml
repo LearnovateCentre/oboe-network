@@ -50,7 +50,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 15.3.0
-          npm: 7.0.14
+          npm-version: '9.x'
 
       - name: Build and push Docker image
       
