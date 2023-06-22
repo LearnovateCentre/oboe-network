@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Avatar,
   Box,
@@ -72,6 +72,7 @@ const StyledBadge = styled(Badge)(({ status }) => ({
 
 const EmployeeProfile = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [employee, setEmployee] = useState(null);
   const [matchingProfiles, setMatchingProfiles] = useState([]);
   const API_BASE_URL = "http://localhost:3001/employees";
@@ -355,6 +356,18 @@ const EmployeeProfile = () => {
             </FlexBetween>
 
             <Divider />
+            <Box display="flex" justifyContent="flex-end">
+              <Button
+                variant="contained"
+                onClick={() => navigate(`/network/${id}`)}
+                sx={{
+                  marginTop: "0.5rem",
+                  alignSelf: "right",
+                }}
+              >
+                Go to network
+              </Button>
+            </Box>
           </Wrapper>
           <Wrapper flex={1}>
             <Typography variant="h6" align="center" gutterBottom>

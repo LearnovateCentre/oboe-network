@@ -16,10 +16,7 @@ function App() {
           <CssBaseline />
           <Routes>
             <Route path="/employee/:id" element={<EmployeeProfile />} />
-            <Route
-              path="/employee/matchingEmployees/:id"
-              element={<Network />}
-            />
+            <Route path="/network/:id" element={<Network />} />
           </Routes>
         </ThemeProvider>
       </BrowserRouter>

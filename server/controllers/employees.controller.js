@@ -143,11 +143,20 @@ export const getMatchingEmployees = async (req, res) => {
         employeeId: id,
       },
       select: {
+        id: true,
         score: true,
         matchingEmployee: {
           select: {
             team: true,
             picture: true,
+            skills: {
+              select: {
+                rating: true,
+                skill: true,
+              },
+            },
+            interests: true,
+            groups: true,
           },
         },
       },

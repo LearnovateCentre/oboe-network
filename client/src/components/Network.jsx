@@ -1,63 +1,97 @@
 import React, { useRef, useEffect, useState } from "react";
 import * as d3 from "d3";
-import { useParams } from "react-router-dom";
-import { Avatar, Box, Typography, Card } from "@mui/material";
+import { useParams, useNavigate } from "react-router-dom";
+import { Avatar, Box, Typography, Card, Tabs, Tab } from "@mui/material";
 import GroupIcon from "@mui/icons-material/Group";
 import { createRoot } from "react-dom/client";
 import Wrapper from "./Wrapper";
 
+const fetchMatchingProfiles = async (id) => {
+  try {
+    const response = await fetch(
+      `http://localhost:3001/employees/matchingEmployees/${id}`,
+      {
+        method: "GET",
+      }
+    );
+    const matchingProfiles = await response.json();
+    return matchingProfiles;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const fetchEmployee = async (id) => {
+  try {
+    const response = await fetch(`http://localhost:3001/employees/${id}`, {
+      method: "GET",
+    });
+    const employee = await response.json();
+    return employee;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const Network = () => {
   const { id } = useParams();
   const containerRef = useRef(null);
-  const [uniqueTeams, setUniqueTeams] = useState([]);
+  const navigate = useNavigate();
+  const uniqueTeamsRef = useRef([]);
   const [selectedTeams, setSelectedTeams] = useState([]);
+  const [selectedTab, setSelectedTab] = useState("Work");
+  const [highlightedProfiles, setHighlightedProfiles] = useState([]);
 
   useEffect(() => {
-    Promise.all([fetchMatchingProfiles(), fetchEmployee()])
+    Promise.all([fetchMatchingProfiles(id), fetchEmployee(id)])
       .then(([matchingProfiles, employee]) => {
         console.log(matchingProfiles);
-        //console.log(employee);
-        createNetwork(matchingProfiles, employee, selectedTeams);
+        console.log(employee);
+        if (selectedTab === "Work") {
+          setHighlightedProfiles(
+            matchingProfiles.filter((profile) =>
+              profile.matchingEmployee.skills.some((skill) =>
+                employee.skills.some(
+                  (empSkill) => empSkill.skill.id === skill.skill.id
+                )
+              )
+            )
+          );
+        } else if (selectedTab === "Social") {
+          setHighlightedProfiles(
+            matchingProfiles.filter(
+              (profile) =>
+                profile.matchingEmployee.interests.some((interest) =>
+                  employee.interests.some(
+                    (empInterest) => empInterest.id === interest.id
+                  )
+                ) ||
+                profile.matchingEmployee.groups.some((group) =>
+                  employee.groups.some((empGroup) => empGroup.id === group.id)
+                )
+            )
+          );
+        }
+
+        createNetwork(matchingProfiles, employee);
         extractUniqueTeams(matchingProfiles);
       })
       .catch((error) => {
         console.log(error);
       });
-  }, [id, selectedTeams]);
+  }, [id, selectedTeams, selectedTab]);
 
-  const fetchMatchingProfiles = async () => {
-    try {
-      const response = await fetch(
-        `http://localhost:3001/employees/matchingEmployees/${id}`,
-        {
-          method: "GET",
-        }
-      );
-      const matchingProfiles = await response.json();
-      return matchingProfiles;
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const fetchEmployee = async () => {
-    try {
-      const response = await fetch(`http://localhost:3001/employees/${id}`, {
-        method: "GET",
-      });
-      const employee = await response.json();
-      return employee;
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  console.log(highlightedProfiles);
 
   const extractUniqueTeams = (matchingProfiles) => {
     const teams = matchingProfiles.map(
       (profile) => profile.matchingEmployee.team
     );
-    const uniqueTeams = [...new Set(teams)];
-    setUniqueTeams(uniqueTeams);
+    uniqueTeamsRef.current = [...new Set(teams)];
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setSelectedTab(newValue);
   };
 
   const handleTeamClick = (team) => {
@@ -72,7 +106,7 @@ const Network = () => {
     }
   };
   console.log(selectedTeams);
-  const createNetwork = (matchingProfiles, employee, selectedTeams) => {
+  const createNetwork = (matchingProfiles, employee) => {
     // Remove the previous network
     d3.select(containerRef.current).selectAll("svg").remove();
 
@@ -114,7 +148,10 @@ const Network = () => {
       .attr("x", centerX - 35)
       .attr("y", centerY - 35)
       .attr("width", 70)
-      .attr("height", 70);
+      .attr("height", 70)
+      .on("click", () => {
+        navigate(`/employee/${employee.id}`);
+      });
 
     centerForeignObject
       .append("xhtml:div")
@@ -141,6 +178,7 @@ const Network = () => {
       const distance = radius * scoreRatio;
       const x = centerX + distance * Math.cos(angle);
       const y = centerY + distance * Math.sin(angle);
+      console.log(profile.id);
 
       // Add the Avatar as a node
       const foreignObject = svg
@@ -157,13 +195,29 @@ const Network = () => {
         .style("justify-content", "center")
         .style("width", "100%")
         .style("height", "100%")
+        // .style(
+        //   "border",
+        //   highlightedProfiles.find(
+        //     (highlightedProfile) => highlightedProfile.id === profile.id
+        //   )
+        //     ? "2px solid #1976d2"
+        //     : "none"
+        // )
         .append(() => {
           const avatar = document.createElement("div");
           createRoot(avatar).render(
             <Avatar
               src={`http://localhost:3001/assets/${profile.matchingEmployee.picture}`}
               alt="Avatar"
-              sx={{ width: 70, height: 70 }}
+              sx={{
+                width: 70,
+                height: 70,
+                border: highlightedProfiles.find(
+                  (highlightedProfile) => highlightedProfile.id === profile.id
+                )
+                  ? "4px solid limegreen"
+                  : "none",
+              }}
             />
           );
           return avatar;
@@ -191,15 +245,28 @@ const Network = () => {
     <Box width="100%" padding="2rem 6%">
       <Box width="100%" maxWidth="1200px" margin="0 auto">
         <Wrapper>
-          <Typography variant="h5" align="center" gutterBottom>
+          <Typography variant="h5" align="center">
             Meet your Team
           </Typography>
+          <Box display="flex" justifyContent="flex-end">
+            <Tabs
+              value={selectedTab}
+              onChange={handleTabChange}
+              aria-label="basic tabs example"
+              indicatorColor="primary"
+              textColor="primary"
+              sx={{ marginBottom: "1rem" }}
+            >
+              <Tab label="Work" value="Work" />
+              <Tab label="Social" value="Social" />
+            </Tabs>
+          </Box>
           <Box
             display="grid"
             gridTemplateColumns="repeat(6, minmax(0, 1fr))"
             columnGap={1}
           >
-            {uniqueTeams.map((team) => (
+            {uniqueTeamsRef.current.map((team) => (
               <Card
                 key={team}
                 onClick={() => handleTeamClick(team)}
