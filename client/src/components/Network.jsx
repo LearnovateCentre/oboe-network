@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import * as d3 from "d3";
 import { useParams, useNavigate } from "react-router-dom";
 import { Avatar, Box, Typography, Card, Tabs, Tab } from "@mui/material";
@@ -33,127 +33,96 @@ const fetchEmployee = async (id) => {
   }
 };
 
-const Network = () => {
-  const { id } = useParams();
-  const containerRef = useRef(null);
-  const navigate = useNavigate();
-  const uniqueTeamsRef = useRef([]);
-  const [selectedTeams, setSelectedTeams] = useState([]);
-  const [selectedTab, setSelectedTab] = useState("Work");
-  const [highlightedProfiles, setHighlightedProfiles] = useState([]);
+const createNetwork = (
+  containerRef,
+  matchingProfiles,
+  employee,
+  selectedTeams,
+  highlightedProfiles,
+  navigate
+) => {
+  // Remove the previous network
+  d3.select(containerRef.current).selectAll("svg").remove();
 
-  useEffect(() => {
-    Promise.all([fetchMatchingProfiles(id), fetchEmployee(id)])
-      .then(([matchingProfiles, employee]) => {
-        console.log(matchingProfiles);
-        console.log(employee);
-        if (selectedTab === "Work") {
-          setHighlightedProfiles(
-            matchingProfiles.filter((profile) =>
-              profile.matchingEmployee.skills.some((skill) =>
-                employee.skills.some(
-                  (empSkill) => empSkill.skill.id === skill.skill.id
-                )
-              )
-            )
-          );
-        } else if (selectedTab === "Social") {
-          setHighlightedProfiles(
-            matchingProfiles.filter(
-              (profile) =>
-                profile.matchingEmployee.interests.some((interest) =>
-                  employee.interests.some(
-                    (empInterest) => empInterest.id === interest.id
-                  )
-                ) ||
-                profile.matchingEmployee.groups.some((group) =>
-                  employee.groups.some((empGroup) => empGroup.id === group.id)
-                )
-            )
-          );
-        }
+  // Sort the matching profiles based on the score in descending order
+  const width = containerRef.current.offsetWidth;
+  const height = containerRef.current.offsetHeight;
 
-        createNetwork(matchingProfiles, employee);
-        extractUniqueTeams(matchingProfiles);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, [id, selectedTeams, selectedTab]);
+  const svg = d3
+    .select(containerRef.current)
+    .selectAll("svg")
+    .data([null])
+    .join("svg")
+    .attr("width", width)
+    .attr("height", height);
 
-  console.log(highlightedProfiles);
+  // Calculate the coordinates of the nodes
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const radius = Math.min(width, height) / 3;
 
-  const extractUniqueTeams = (matchingProfiles) => {
-    const teams = matchingProfiles.map(
-      (profile) => profile.matchingEmployee.team
+  let filteredProfiles = matchingProfiles;
+  if (selectedTeams.length > 0) {
+    filteredProfiles = matchingProfiles.filter((profile) =>
+      selectedTeams.includes(profile.matchingEmployee.team)
     );
-    uniqueTeamsRef.current = [...new Set(teams)];
-  };
+  }
+  //console.log(filteredProfiles);
 
-  const handleTabChange = (event, newValue) => {
-    setSelectedTab(newValue);
-  };
+  const numProfiles = filteredProfiles.length;
+  const maxScore = Math.max(
+    ...filteredProfiles.map((profile) => profile.score)
+  );
 
-  const handleTeamClick = (team) => {
-    if (selectedTeams.includes(team)) {
-      // Remove the team from the selected teams if it is already selected
-      const teams = selectedTeams.filter((t) => t !== team);
-      setSelectedTeams(teams);
-    } else {
-      // Add the team to the selected teams if it is not already selected
-      const teams = [...selectedTeams, team];
-      setSelectedTeams(teams);
-    }
-  };
-  console.log(selectedTeams);
-  const createNetwork = (matchingProfiles, employee) => {
-    // Remove the previous network
-    d3.select(containerRef.current).selectAll("svg").remove();
+  const angleStep = (2 * Math.PI) / numProfiles;
 
-    // Sort the matching profiles based on the score in descending order
-    const width = containerRef.current.offsetWidth;
-    const height = containerRef.current.offsetHeight;
+  // Add the center avatar
+  const centerForeignObject = svg
+    .append("foreignObject")
+    .attr("x", centerX - 35)
+    .attr("y", centerY - 35)
+    .attr("width", 70)
+    .attr("height", 70)
+    .on("click", () => {
+      navigate(`/employee/${employee.id}`);
+    });
 
-    const svg = d3
-      .select(containerRef.current)
-      .selectAll("svg")
-      .data([null])
-      .join("svg")
-      .attr("width", width)
-      .attr("height", height);
-
-    // Calculate the coordinates of the nodes
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const radius = Math.min(width, height) / 3;
-
-    let filteredProfiles = matchingProfiles;
-    if (selectedTeams.length > 0) {
-      filteredProfiles = matchingProfiles.filter((profile) =>
-        selectedTeams.includes(profile.matchingEmployee.team)
+  centerForeignObject
+    .append("xhtml:div")
+    .style("display", "flex")
+    .style("align-items", "center")
+    .style("justify-content", "center")
+    .style("width", "100%")
+    .style("height", "100%")
+    .append(() => {
+      const avatar = document.createElement("div");
+      createRoot(avatar).render(
+        <Avatar
+          src={`http://localhost:3001/assets/${employee.picture}`}
+          alt="Avatar"
+          sx={{ width: 70, height: 70 }}
+        />
       );
-    }
-    console.log(filteredProfiles);
+      return avatar;
+    });
 
-    const numProfiles = filteredProfiles.length;
-    const maxScore = Math.max(
-      ...filteredProfiles.map((profile) => profile.score)
-    );
+  filteredProfiles.forEach((profile, index) => {
+    const scoreRatio = profile.score / maxScore;
+    const angle = index * angleStep;
+    const distance = radius * scoreRatio;
+    const x = centerX + distance * Math.cos(angle);
+    const y = centerY + distance * Math.sin(angle);
+    //console.log(profile.id);
 
-    const angleStep = (2 * Math.PI) / numProfiles;
-
-    // Add the center avatar
-    const centerForeignObject = svg
+    // Add the Avatar as a node
+    const foreignObject = svg
       .append("foreignObject")
-      .attr("x", centerX - 35)
-      .attr("y", centerY - 35)
+      .attr("x", x - 35)
+      .attr("y", y - 35)
       .attr("width", 70)
-      .attr("height", 70)
-      .on("click", () => {
-        navigate(`/employee/${employee.id}`);
-      });
+      .attr("height", 70);
 
-    centerForeignObject
+    foreignObject
       .append("xhtml:div")
       .style("display", "flex")
       .style("align-items", "center")
@@ -164,82 +133,135 @@ const Network = () => {
         const avatar = document.createElement("div");
         createRoot(avatar).render(
           <Avatar
-            src={`http://localhost:3001/assets/${employee.picture}`}
+            src={`http://localhost:3001/assets/${profile.matchingEmployee.picture}`}
             alt="Avatar"
-            sx={{ width: 70, height: 70 }}
+            sx={{
+              width: 70,
+              height: 70,
+              border: highlightedProfiles.find(
+                (highlightedProfile) => highlightedProfile.id === profile.id
+              )
+                ? "4px solid limegreen"
+                : "none",
+            }}
           />
         );
         return avatar;
       });
+    // Add the link between employee and matching profile
+    // Calculate the offset for the line's start and end points
+    const startOffsetX = 35 * Math.cos(angle);
+    const startOffsetY = 35 * Math.sin(angle);
+    const endOffsetX = 35 * Math.cos(angle + Math.PI);
+    const endOffsetY = 35 * Math.sin(angle + Math.PI);
 
-    filteredProfiles.forEach((profile, index) => {
-      const scoreRatio = profile.score / maxScore;
-      const angle = index * angleStep;
-      const distance = radius * scoreRatio;
-      const x = centerX + distance * Math.cos(angle);
-      const y = centerY + distance * Math.sin(angle);
-      console.log(profile.id);
+    // Add the link between employee and matching profile
+    svg
+      .append("line")
+      .attr("x1", centerX + startOffsetX)
+      .attr("y1", centerY + startOffsetY)
+      .attr("x2", x + endOffsetX)
+      .attr("y2", y + endOffsetY)
+      .attr("stroke", "#aaa")
+      .attr("stroke-width", 1);
+  });
+};
 
-      // Add the Avatar as a node
-      const foreignObject = svg
-        .append("foreignObject")
-        .attr("x", x - 35)
-        .attr("y", y - 35)
-        .attr("width", 70)
-        .attr("height", 70);
+const extractHighlightedProfiles = (
+  matchingProfiles,
+  employee,
+  selectedTab
+) => {
+  if (selectedTab === "Work") {
+    return matchingProfiles.filter((profile) =>
+      profile.matchingEmployee.skills.some((skill) =>
+        employee.skills.some((empSkill) => empSkill.skill.id === skill.skill.id)
+      )
+    );
+  } else if (selectedTab === "Social") {
+    return matchingProfiles.filter(
+      (profile) =>
+        profile.matchingEmployee.interests.some((interest) =>
+          employee.interests.some(
+            (empInterest) => empInterest.id === interest.id
+          )
+        ) ||
+        profile.matchingEmployee.groups.some((group) =>
+          employee.groups.some((empGroup) => empGroup.id === group.id)
+        )
+    );
+  }
+  return [];
+};
 
-      foreignObject
-        .append("xhtml:div")
-        .style("display", "flex")
-        .style("align-items", "center")
-        .style("justify-content", "center")
-        .style("width", "100%")
-        .style("height", "100%")
-        // .style(
-        //   "border",
-        //   highlightedProfiles.find(
-        //     (highlightedProfile) => highlightedProfile.id === profile.id
-        //   )
-        //     ? "2px solid #1976d2"
-        //     : "none"
-        // )
-        .append(() => {
-          const avatar = document.createElement("div");
-          createRoot(avatar).render(
-            <Avatar
-              src={`http://localhost:3001/assets/${profile.matchingEmployee.picture}`}
-              alt="Avatar"
-              sx={{
-                width: 70,
-                height: 70,
-                border: highlightedProfiles.find(
-                  (highlightedProfile) => highlightedProfile.id === profile.id
-                )
-                  ? "4px solid limegreen"
-                  : "none",
-              }}
-            />
-          );
-          return avatar;
-        });
-      // Add the link between employee and matching profile
-      // Calculate the offset for the line's start and end points
-      const startOffsetX = 35 * Math.cos(angle);
-      const startOffsetY = 35 * Math.sin(angle);
-      const endOffsetX = 35 * Math.cos(angle + Math.PI);
-      const endOffsetY = 35 * Math.sin(angle + Math.PI);
+const Network = () => {
+  const { id } = useParams();
+  const containerRef = useRef(null);
+  const navigate = useNavigate();
+  const [uniqueTeams, setUniqueTeams] = useState([]);
+  const [selectedTeams, setSelectedTeams] = useState([]);
+  const [selectedTab, setSelectedTab] = useState("Work");
 
-      // Add the link between employee and matching profile
-      svg
-        .append("line")
-        .attr("x1", centerX + startOffsetX)
-        .attr("y1", centerY + startOffsetY)
-        .attr("x2", x + endOffsetX)
-        .attr("y2", y + endOffsetY)
-        .attr("stroke", "#aaa")
-        .attr("stroke-width", 1);
-    });
+  console.log(selectedTab);
+
+  useEffect(() => {
+    Promise.all([fetchMatchingProfiles(id), fetchEmployee(id)])
+      .then(([matchingProfiles, employee]) => {
+        //console.log(matchingProfiles);
+        //console.log(employee);
+        const highlightedProfiles = extractHighlightedProfiles(
+          matchingProfiles,
+          employee,
+          selectedTab
+        );
+
+        createNetwork(
+          containerRef,
+          matchingProfiles,
+          employee,
+          selectedTeams,
+          highlightedProfiles,
+          navigate
+        );
+        extractUniqueTeams(matchingProfiles);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, [id, selectedTeams, selectedTab]);
+
+  //console.log(highlightedProfiles);
+
+  const extractUniqueTeams = (matchingProfiles) => {
+    const teams = matchingProfiles.map(
+      (profile) => profile.matchingEmployee.team
+    );
+    const uniqueTeams = [...new Set(teams)];
+    setUniqueTeams(uniqueTeams);
   };
+
+  const handleTabChange = useCallback(
+    (event, newValue) => {
+      setSelectedTab(newValue);
+    },
+    [setSelectedTab]
+  );
+
+  const handleTeamClick = useCallback(
+    (team) => {
+      if (selectedTeams.includes(team)) {
+        // Remove the team from the selected teams if it is already selected
+        const teams = selectedTeams.filter((t) => t !== team);
+        setSelectedTeams(teams);
+      } else {
+        // Add the team to the selected teams if it is not already selected
+        const teams = [...selectedTeams, team];
+        setSelectedTeams(teams);
+      }
+    },
+    [selectedTeams, setSelectedTeams]
+  );
+  //console.log(selectedTeams);
 
   return (
     <Box width="100%" padding="2rem 6%">
@@ -266,7 +288,7 @@ const Network = () => {
             gridTemplateColumns="repeat(6, minmax(0, 1fr))"
             columnGap={1}
           >
-            {uniqueTeamsRef.current.map((team) => (
+            {uniqueTeams.map((team) => (
               <Card
                 key={team}
                 onClick={() => handleTeamClick(team)}
