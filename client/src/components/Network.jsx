@@ -156,7 +156,7 @@ const createNetwork = (
     const endOffsetY = 35 * Math.sin(angle + Math.PI);
 
     // Add the link between employee and matching profile
-    svg
+    const line = svg
       .append("line")
       .attr("x1", centerX + startOffsetX)
       .attr("y1", centerY + startOffsetY)
@@ -164,6 +164,14 @@ const createNetwork = (
       .attr("y2", y + endOffsetY)
       .attr("stroke", "#aaa")
       .attr("stroke-width", 1);
+
+    // Highlight the line if it connects with a highlighted profile
+    const highlightedProfile = highlightedProfiles.find(
+      (highlightedProfile) => highlightedProfile.id === profile.id
+    );
+    if (highlightedProfile) {
+      line.attr("stroke", "limegreen").attr("stroke-width", 4);
+    }
   });
 };
 
@@ -321,7 +329,6 @@ const Network = () => {
           <Typography variant="h5" align="center" marginTop={2} gutterBottom>
             Your Buddies
           </Typography>
-
           <Box ref={containerRef} width="100%" height="600px"></Box>
         </Wrapper>
       </Box>
