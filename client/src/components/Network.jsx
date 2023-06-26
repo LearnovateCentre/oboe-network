@@ -1,10 +1,118 @@
+/* eslint-disable react/prop-types */
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import * as d3 from "d3";
 import { useParams, useNavigate } from "react-router-dom";
-import { Avatar, Box, Typography, Card, Tabs, Tab } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Typography,
+  Card,
+  Tabs,
+  Tab,
+  Modal,
+  styled,
+  Divider,
+  Chip,
+} from "@mui/material";
 import GroupIcon from "@mui/icons-material/Group";
 import { createRoot } from "react-dom/client";
 import Wrapper from "./Wrapper";
+import { useTheme } from "@mui/material/styles";
+
+const StyledModal = styled(Modal)({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+
+  "& .MuiBackdrop-root": {
+    backgroundColor: "transparent",
+  },
+});
+
+const AvatarModal = ({
+  avatar,
+  onClose,
+  selectedTab,
+  //modalPosition
+}) => {
+  return (
+    <StyledModal
+      open={Boolean(avatar)}
+      onClose={onClose}
+      aria-labelledby="modal-modal-title"
+      aria-describedby="modal-modal-description"
+      disableAutoFocus
+      //disableScrollLock
+      //style={{ top: modalPosition.top, left: modalPosition.left }}
+    >
+      <Box
+        width={250}
+        display="flex"
+        bgcolor="background.paper"
+        borderRadius="0.75rem"
+        gap="0.1rem"
+        flexDirection="column"
+        overflow="hidden"
+        sx={{
+          boxShadow: "0px 0px 10px 0px rgba(0, 0, 0, 0.75)",
+        }}
+      >
+        <Box
+          width={1}
+          height={250}
+          sx={{
+            margin: "0 auto",
+          }}
+        >
+          <img
+            src={`http://localhost:3001/assets/${avatar?.picture}`}
+            alt=""
+            width="100%"
+            height="100%"
+            style={{ objectFit: "cover" }}
+          />
+        </Box>
+        <Box
+          flexDirection="column"
+          display="flex"
+          paddingX={1}
+          paddingBottom={0.5}
+        >
+          <Typography variant="h6">
+            {avatar?.firstName} {avatar?.lastName}
+          </Typography>
+          <Typography variant="body2">{avatar?.role}</Typography>
+          <Typography variant="body2">Email: {avatar?.email}</Typography>
+          <Typography variant="subtitle2">
+            {selectedTab === "Work" ? "Skills:" : "Interests:"}
+          </Typography>
+          <Divider />
+          <Box display="flex" flexWrap="wrap" gap={0.5} marginTop={0.5}>
+            {selectedTab === "Work" &&
+              avatar?.skills.map((skill) => (
+                <Chip
+                  key={skill.skill.id}
+                  variant="filled"
+                  label={skill.skill.name}
+                  color="primary"
+                />
+              ))}
+            {selectedTab === "Social" &&
+              avatar?.interests.map((interest) => (
+                <Chip
+                  key={interest.id}
+                  variant="filled"
+                  label={interest.name}
+                  color="secondary"
+                />
+              ))}
+          </Box>
+        </Box>
+        {/* Add other avatar information here */}
+      </Box>
+    </StyledModal>
+  );
+};
 
 const fetchMatchingProfiles = async (id) => {
   try {
@@ -39,7 +147,11 @@ const createNetwork = (
   employee,
   selectedTeams,
   highlightedProfiles,
-  navigate
+  navigate,
+  theme,
+  selectedTab,
+  setSelectedAvatar
+  //setModalPosition
 ) => {
   // Remove the previous network
   d3.select(containerRef.current).selectAll("svg").remove();
@@ -77,7 +189,7 @@ const createNetwork = (
   const angleStep = (2 * Math.PI) / numProfiles;
 
   // Add the center avatar
-  const centerForeignObject = svg
+  const centerAvatar = svg
     .append("foreignObject")
     .attr("x", centerX - 35)
     .attr("y", centerY - 35)
@@ -87,7 +199,7 @@ const createNetwork = (
       navigate(`/employee/${employee.id}`);
     });
 
-  centerForeignObject
+  centerAvatar
     .append("xhtml:div")
     .style("display", "flex")
     .style("align-items", "center")
@@ -100,7 +212,23 @@ const createNetwork = (
         <Avatar
           src={`http://localhost:3001/assets/${employee.picture}`}
           alt="Avatar"
-          sx={{ width: 70, height: 70 }}
+          sx={{
+            width: 70,
+            height: 70,
+            border: `4px solid ${
+              selectedTab === "Work"
+                ? theme.palette.primary.light
+                : theme.palette.secondary.light
+            }`,
+            "&:hover": {
+              cursor: "pointer",
+              border: `4px solid ${
+                selectedTab === "Work"
+                  ? theme.palette.primary.main
+                  : theme.palette.secondary.main
+              }`,
+            },
+          }}
         />
       );
       return avatar;
@@ -112,17 +240,22 @@ const createNetwork = (
     const distance = radius * scoreRatio;
     const x = centerX + distance * Math.cos(angle);
     const y = centerY + distance * Math.sin(angle);
-    //console.log(profile.id);
+    //console.log(profile);
 
     // Add the Avatar as a node
-    const foreignObject = svg
+    const matchingAvatar = svg
       .append("foreignObject")
       .attr("x", x - 35)
       .attr("y", y - 35)
       .attr("width", 70)
-      .attr("height", 70);
+      .attr("height", 70)
+      .on("click", () => {
+        setSelectedAvatar(profile.matchingEmployee);
+        //Pass the x and y coordinates of the matchingAvatar to the setModalPosition
+        //setModalPosition({ top: y - 35, left: x - 35 });
+      });
 
-    foreignObject
+    matchingAvatar
       .append("xhtml:div")
       .style("display", "flex")
       .style("align-items", "center")
@@ -139,10 +272,27 @@ const createNetwork = (
               width: 70,
               height: 70,
               border: highlightedProfiles.find(
+                //
                 (highlightedProfile) => highlightedProfile.id === profile.id
               )
-                ? "4px solid limegreen"
+                ? `4px solid ${
+                    selectedTab === "Work"
+                      ? theme.palette.primary.light
+                      : theme.palette.secondary.light
+                  }`
                 : "none",
+              "&:hover": {
+                cursor: "pointer",
+                border: highlightedProfiles.find(
+                  (highlightedProfile) => highlightedProfile.id === profile.id
+                )
+                  ? `4px solid ${
+                      selectedTab === "Work"
+                        ? theme.palette.primary.main
+                        : theme.palette.secondary.main
+                    }`
+                  : "none",
+              },
             }}
           />
         );
@@ -170,7 +320,16 @@ const createNetwork = (
       (highlightedProfile) => highlightedProfile.id === profile.id
     );
     if (highlightedProfile) {
-      line.attr("stroke", "limegreen").attr("stroke-width", 4);
+      line
+        .attr(
+          "stroke",
+          `${
+            selectedTab === "Work"
+              ? theme.palette.primary.light
+              : theme.palette.secondary.light
+          }`
+        )
+        .attr("stroke-width", 4);
     }
   });
 };
@@ -209,8 +368,12 @@ const Network = () => {
   const [uniqueTeams, setUniqueTeams] = useState([]);
   const [selectedTeams, setSelectedTeams] = useState([]);
   const [selectedTab, setSelectedTab] = useState("Work");
+  const [selectedAvatar, setSelectedAvatar] = useState(null);
+  //const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
+  const theme = useTheme();
 
-  console.log(selectedTab);
+  //console.log(selectedAvatar);
+  //console.log(selectedTab);
 
   useEffect(() => {
     Promise.all([fetchMatchingProfiles(id), fetchEmployee(id)])
@@ -229,7 +392,11 @@ const Network = () => {
           employee,
           selectedTeams,
           highlightedProfiles,
-          navigate
+          navigate,
+          theme,
+          selectedTab,
+          setSelectedAvatar
+          //setModalPosition
         );
         extractUniqueTeams(matchingProfiles);
       })
@@ -329,7 +496,14 @@ const Network = () => {
           <Typography variant="h5" align="center" marginTop={2} gutterBottom>
             Your Buddies
           </Typography>
-          <Box ref={containerRef} width="100%" height="600px"></Box>
+          <Box ref={containerRef} width="100%" height="600px">
+            <AvatarModal
+              avatar={selectedAvatar}
+              onClose={() => setSelectedAvatar(null)}
+              selectedTab={selectedTab}
+              //modalPosition={modalPosition}
+            />
+          </Box>
         </Wrapper>
       </Box>
     </Box>

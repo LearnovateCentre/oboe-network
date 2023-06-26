@@ -147,6 +147,10 @@ export const getMatchingEmployees = async (req, res) => {
         score: true,
         matchingEmployee: {
           select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+            role: true,
             team: true,
             picture: true,
             skills: {
