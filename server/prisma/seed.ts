@@ -1,20 +1,6 @@
 import { employees } from "./data.ts";
 import prisma from "./client.ts";
 
-enum Status {
-  ACTIVE = "ACTIVE",
-  INACTIVE = "INACTIVE",
-  AWAY = "AWAY",
-  BUSY = "BUSY"
-}
-
-enum Level {
-  BASIC = "BASIC",
-  INTERMEDIATE = "INTERMEDIATE",
-  ADVANCED = "ADVANCED",
-  EXPERT = "EXPERT"
-}
-
 async function seed() {
   console.log("Seeding database...");
 
@@ -36,6 +22,7 @@ async function seed() {
 
         const newEmployee = await prisma.employee.create({
           data: {
+            ...employeeData,
             skills: {
               create: skills.map((skill) => ({
                 ...skill,
@@ -81,10 +68,10 @@ async function seed() {
             onboardee: employeeData.onboardee,
             team: employeeData.team,
             role: employeeData.role,
-            level: Level['ADVANCED'],
-            status: Status['ACTIVE'],
+            level: employeeData.level as any,
+            status: employeeData.status as any,
             picture: employeeData.picture,
-          }
+          },
         });
 
         console.log(`Created employee with email: ${newEmployee.email}`);

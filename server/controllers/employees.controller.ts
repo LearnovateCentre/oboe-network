@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import prisma from '../prisma/client.js';
+import prisma from "../prisma/client.ts";
 import { exit } from 'process';
 
 export const getEmployee = async (req: Request, res: Response) => {
@@ -29,7 +29,7 @@ export const getEmployee = async (req: Request, res: Response) => {
             tags: true,
           },
         },
-       },
+      },
     });
 
     // Extract the employee's interests tags
@@ -56,11 +56,11 @@ export const getEmployee = async (req: Request, res: Response) => {
       },
     });
 
-    employeeResult = Object.assign({}, employee)
+    employeeResult = Object.assign({}, employee);
     employeeResult.recommendedGroups = recommendedGroups;
 
     res.status(200).json(employeeResult);
-    }
+  }
   } catch (error: any) {
     res.status(404).json({ error: error.message });
   }
@@ -120,5 +120,63 @@ export const updateEmployee = async (req: Request, res: Response) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const saveMatchingEmployees = async (req: Request, res: Response) => {
+  try {
+    const { employeeId, matchingProfiles } = req.body;
+
+    const savedProfiles = await prisma.matchingEmployee.createMany({
+      data: matchingProfiles.map((profile:any) => ({
+        employeeId: employeeId,
+        matchingEmployeeId: profile.id,
+        score: profile.score,
+      })),
+      skipDuplicates: true,
+    });
+
+    res.status(200).json({ message: "Matching profiles saved successfully" });
+  } catch (error: any) {
+    res.status(500).json({ message: "Failed to save matching profiles" });
+  }
+};
+
+export const getMatchingEmployees = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    console.log(id);
+
+    const matchingEmployees = await prisma.matchingEmployee.findMany({
+      where: {
+        employeeId: id,
+      },
+      select: {
+        id: true,
+        score: true,
+        matchingEmployee: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+            role: true,
+            team: true,
+            picture: true,
+            skills: {
+              select: {
+                rating: true,
+                skill: true,
+              },
+            },
+            interests: true,
+            groups: true,
+          },
+        },
+      },
+    });
+
+    res.status(200).json(matchingEmployees);
+  } catch (error: any) {
+    res.status(500).json({ message: "Failed to fetch matching profiles" });
   }
 };
