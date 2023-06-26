@@ -1,0 +1,61 @@
+version: "3.6"
+
+services:
+
+    #nginx:
+    #    restart: on-failure
+    #    image: nginx:stable
+    #    volumes:
+    #      - ./nginx/nginx.dev.conf:/etc/nginx/conf.d/default.conf
+    #    ports:
+    #      - "80:80"
+    #    depends_on:
+    #      - client
+
+    # Create a new container to run PostgresDB
+    db:
+        image: postgres:10
+        container_name: postgres
+        restart: always
+        environment:
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=learnovat8
+        - POSTGRES_DB=oboe
+        volumes:
+          - ./postgres-data:/var/lib/postgresql/data
+          # copy the sql script to create tables
+          - ../postgresql/oboe.sql:/docker-entrypoint-initdb.d/oboe.sql
+        ports:
+          - "5432:5432"
+        networks:
+          - oboe  
+
+    # Run the Dockerfile to build a project in the current directory
+    server:
+        image: oboe-server
+        container_name: oboe-server
+        ports:
+          - "3001:3001"
+        depends_on:
+          - db
+        networks:
+          - oboe 
+
+    # Run the Dockerfile to build the client React application
+    # Dockerfile should build React app and copy it to a simple Nginx container for hosting
+    client:
+        image: oboe-client
+        container_name: oboe-client
+        stdin_open: true
+        ports:
+          - "3000:80"
+        networks:
+          - oboe
+        depends_on:
+         - server
+
+networks:
+     pulse:
+        external: true
+        name: oboe
+        driver: bridge

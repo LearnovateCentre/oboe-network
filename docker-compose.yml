@@ -1,0 +1,31 @@
+version: '3.6'
+
+services:
+  db:
+    image: postgres:10
+    container_name: postgres
+    restart: always
+    environment:
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=learnovat8
+        - POSTGRES_DB=oboe
+    volumes:
+      - "./server/setup.sql:/docker-entrypoint-initdb.d/setup.sql"
+    ports:
+      - "5432:5432"
+  api:
+    build: ./server
+    container_name: oboe-api
+    ports:
+      - "3001:3001"
+    depends_on:
+      - db
+  app:
+    build: ./client
+    container_name: oboe-client
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    stdin_open: true
+    tty: true
