@@ -262,10 +262,9 @@ const EmployeeProfile = () => {
           mt={4}
           display="flex"
           justifyContent="space-between"
-          flexDirection="row"
           gap={4}
         >
-          <Wrapper flex={1}>
+          <Wrapper height="100%" flex={1}>
             <Typography variant="h6" align="center" gutterBottom>
               SKILLS
             </Typography>

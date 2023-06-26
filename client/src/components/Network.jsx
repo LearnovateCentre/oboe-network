@@ -496,6 +496,7 @@ const Network = () => {
           <Typography variant="h5" align="center" marginTop={2} gutterBottom>
             Your Buddies
           </Typography>
+
           <Box ref={containerRef} width="100%" height="600px">
             <AvatarModal
               avatar={selectedAvatar}
