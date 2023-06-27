@@ -3,8 +3,8 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { theme } from "./theme";
 
-import EmployeeProfile from "./components/EmployeeProfile";
-import Network from "./components/Network";
+import EmployeeProfile from "./pages/EmployeeProfile";
+import Network from "./pages/Network";
 
 function App() {
   //const theme = useMemo(() => createTheme(themeSettings(mode)), [mode]);

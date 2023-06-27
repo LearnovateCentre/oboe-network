@@ -6,7 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 // import routes
-import employeesRoutes from "./routes/employees.routes.js";
+import employeesRoutes from "./routes/employees.routes.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

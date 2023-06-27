@@ -16,8 +16,8 @@ import {
 import PanoramaFishEyeIcon from "@mui/icons-material/PanoramaFishEye";
 import CircleIcon from "@mui/icons-material/Circle";
 import Add from "@mui/icons-material/Add";
-import Wrapper from "./Wrapper";
-import FlexBetween from "./FlexBetween";
+import Wrapper from "../components/Wrapper";
+import FlexBetween from "../components/FlexBetween";
 
 const getStatusColor = (status) => {
   switch (status) {
