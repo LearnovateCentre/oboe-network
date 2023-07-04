@@ -33,7 +33,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: debian-latest
 
     steps:
       - name: Checkout code
@@ -60,7 +60,7 @@ jobs:
       - name: Build and push Docker image
         run: |
           docker build -t oboe-client ./client
-          docker tag postgres 262288775997.dkr.ecr.us-east-1.amazonaws.com/oboe-network/oboe-client:lastest
+          docker tag oboe-client 262288775997.dkr.ecr.us-east-1.amazonaws.com/oboe-network/oboe-client:lastest
           docker push 262288775997.dkr.ecr.us-east-1.amazonaws.com/oboe-network/oboe-client:lastest
 
       - name: SSH into Lightsail instance
