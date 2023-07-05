@@ -43,8 +43,8 @@ jobs:
         run: |
           aws configure set aws_access_key_id ${{ secrets.ACCESSKEY_AWS }}
           aws configure set aws_secret_access_key ${{ secrets.SECRETKEY_AWS }}
-          aws configure set default.region us-east-2  # Replace with your region
-          aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 262288775997.dkr.ecr.us-east-2.amazonaws.com/oboe-network
+          aws configure set default.region eu-west-1a  # Replace with your region
+          aws ecr get-login-password --region eu-west-1a | docker login --username AWS --password-stdin 262288775997.dkr.ecr.us-east-2.amazonaws.com/oboe-network
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
@@ -55,14 +55,15 @@ jobs:
       
       - name: Build and push Docker image
         run: |
+          docker login -u AWS -p $(aws ecr get-login-password) 262288775997.dkr.ecr.us-east-2.amazonaws.com/oboe-network
           docker build -t oboe-api ./server
           docker tag oboe-api 262288775997.dkr.ecr.us-east-2.amazonaws.com/oboe-network/oboe-api:latest
-          docker push 262288775997.dkr.ecr.us-east-2.amazonaws.com/oboe-network/oboe-api:latest
+          docker push --debug 262288775997.dkr.ecr.us-east-2.amazonaws.com/oboe-network/oboe-api:latest
           
       - name: Build and push Docker image
         run: |
           docker build -t oboe-client ./client
-          docker tag oboe-client 262288775997.dkr.ecr.us-east-2.amazonaws.com/oboe-network/oboe-client:lastest
+          docker tag oboe-client 262288775997.dkr.ecr.us-east-2.amazonaws.com/oboe-network/oboe-client:latest
           docker push 262288775997.dkr.ecr.us-east-2.amazonaws.com/oboe-network/oboe-client:latest
 
       - name: SSH into Lightsail instance
