@@ -1,6 +1,6 @@
 # Check out https://hub.docker.com/_/node to select a new base image
 # FROM node:10-slim
-FROM node:15.2-buster AS build
+FROM node:15.3-buster AS build
 
 # Set to a non-root built-in user `node`
 # USER node

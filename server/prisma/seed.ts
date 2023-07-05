@@ -5,7 +5,7 @@ async function seed() {
   console.log("Seeding database...");
 
   try {
-    await prisma.$transaction(async (prisma) => {
+    await prisma.$transaction(async (prisma: any) => {
       const promises = employees.map(async (employee) => {
         const { skills, interests, groups, ...employeeData } = employee;
 

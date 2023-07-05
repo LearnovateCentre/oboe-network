@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from "../prisma/client.ts";
 import { exit } from 'process';
+import { Interest } from '@prisma/client';
 
 export const getEmployee = async (req: Request, res: Response) => {
   try {
@@ -35,7 +36,7 @@ export const getEmployee = async (req: Request, res: Response) => {
     // Extract the employee's interests tags
     if (!!employee) {
     const interestTags = employee.interests
-      .map((interest) => interest.tags.map((tag) => tag.name))
+      .map((interest: any) => interest.tags.map((tag: any) => tag.name))
       .flat();
 
     // Fetch recommended groups based on employee interests tags
