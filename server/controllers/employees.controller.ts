@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from "../prisma/client.ts";
 import { exit } from 'process';
-import { Interest } from '@prisma/client';
 
 export const getEmployee = async (req: Request, res: Response) => {
   try {
