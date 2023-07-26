@@ -77,8 +77,8 @@ jobs:
       - name: Build and push Docker image
         run: |
           docker build -t oboe-api ./server
-          docker tag oboe-api 262288775997.dkr.ecr.eu-west-1.amazonaws.com/oboe-network/oboe-api:latest
-          docker push 262288775997.dkr.ecr.eu-west-1.amazonaws.com/oboe-network/oboe-api:latest
+          docker tag oboe-api 262288775997.dkr.ecr.eu-west-1.amazonaws.com/oboe-network/oboe-api
+          docker push 262288775997.dkr.ecr.eu-west-1.amazonaws.com/oboe-network/oboe-api
           
       - name: Build and push Docker image
         run: |
