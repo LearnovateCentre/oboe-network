@@ -31,6 +31,11 @@ on:
     branches:
       - main
 
+# Permission can be added at job level or workflow level    
+permissions:
+      id-token: write   # This is required for requesting the JWT
+      contents: read    # This is required for actions/checkout
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -45,7 +50,7 @@ jobs:
           # aws configure set aws_secret_access_key ${{ secrets.SECRETKEY_AWS }}
           # aws configure set default.region us-east-2  # Replace with your region
           # aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 262288775997.dkr.ecr.us-east-2.amazonaws.com/oboe-network
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v1.7.0
         with:
           role-to-assume: arn:aws:iam::262288775997:role/GitHubAction-AssumeRoleWithAction
           aws-region: eu-west-1
