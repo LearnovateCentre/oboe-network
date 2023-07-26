@@ -77,14 +77,14 @@ jobs:
       - name: Build and push Docker image
         run: |
           docker build -t oboe-api ./server
-          docker tag oboe-api 262288775997.dkr.ecr.us-east-2.amazonaws.com/oboe-network/oboe-api:latest
-          docker push 262288775997.dkr.ecr.us-east-2.amazonaws.com/oboe-network/oboe-api:latest
+          docker tag oboe-api 262288775997.dkr.ecr.eu-west-1.amazonaws.com/oboe-network/oboe-api:latest
+          docker push 262288775997.dkr.ecr.eu-west-1.amazonaws.com/oboe-network/oboe-api:latest
           
       - name: Build and push Docker image
         run: |
           docker build -t oboe-client ./client
-          docker tag oboe-client 262288775997.dkr.ecr.us-east-2.amazonaws.com/oboe-network/oboe-client:latest
-          docker push 262288775997.dkr.ecr.us-east-2.amazonaws.com/oboe-network/oboe-client:latest
+          docker tag oboe-client 262288775997.dkr.ecr.eu-west-1.amazonaws.com/oboe-network/oboe-client:latest
+          docker push 262288775997.dkr.ecr.eu-west-1.amazonaws.com/oboe-network/oboe-client:latest
 
       - name: SSH into Lightsail instance
         uses: appleboy/ssh-action@master
