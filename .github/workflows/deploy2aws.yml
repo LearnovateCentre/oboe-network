@@ -83,16 +83,34 @@ jobs:
       - name: Build and push Docker image
         run: |
           docker build -t oboe-client ./client
-          docker tag oboe-client 262288775997.dkr.ecr.eu-west-1.amazonaws.com/oboe-network/oboe-client:latest
-          docker push 262288775997.dkr.ecr.eu-west-1.amazonaws.com/oboe-network/oboe-client:latest
+          docker tag oboe-client 262288775997.dkr.ecr.eu-west-1.amazonaws.com/oboe-network/oboe-app
+          docker push 262288775997.dkr.ecr.eu-west-1.amazonaws.com/oboe-network/oboe-app
 
-      - name: SSH into Lightsail instance
-        uses: appleboy/ssh-action@master
-        with:
-          host: 54.72.253.225
-          username: PabloAlvarez
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+      # - name: SSH into Lightsail instance
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: 54.72.253.225
+      #     username: PabloAlvarez
+      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Deploy Docker image
+      # - name: Deploy Docker image
+      #   run: |
+      #     ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.LIGHTSAIL_INSTANCE_IP }} 'docker-compose pull && docker-compose up -d'
+
+      - name: Install AWS CLI and ECS CLI
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.LIGHTSAIL_INSTANCE_IP }} 'docker-compose pull && docker-compose up -d'
+          pip3 install awscli
+          curl -Lo ecs-cli https://amazon-ecs-cli.s3.amazonaws.com/ecs-cli-linux-amd64-latest
+          chmod +x ecs-cli
+          sudo mv ecs-cli /usr/local/bin/
+
+      - name: Deploy to ECS
+        run: |
+          # Log in to Amazon ECR
+          eval $(aws ecr get-login --no-include-email --region eu-west-1)
+
+          # Pull images from ECR (if necessary)
+          docker-compose pull
+
+          # Deploy services to ECS
+          ecs-cli compose up
