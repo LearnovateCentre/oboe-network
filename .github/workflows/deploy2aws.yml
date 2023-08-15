@@ -110,7 +110,7 @@ jobs:
           eval $(aws ecr get-login --no-include-email --region eu-west-1)
 
           # Pull images from ECR (if necessary)
-          docker-compose pull
+          # docker-compose pull
 
           # Deploy services to ECS
           ecs-cli compose up
