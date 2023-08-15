@@ -97,20 +97,20 @@ jobs:
       #   run: |
       #     ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.LIGHTSAIL_INSTANCE_IP }} 'docker-compose pull && docker-compose up -d'
 
-      - name: Install AWS CLI and ECS CLI
-        run: |
-          pip3 install awscli
-          curl -Lo ecs-cli https://amazon-ecs-cli.s3.amazonaws.com/ecs-cli-linux-amd64-latest
-          chmod +x ecs-cli
-          sudo mv ecs-cli /usr/local/bin/
+      # - name: Install AWS CLI and ECS CLI
+      #   run: |
+      #     pip3 install awscli
+      #     curl -Lo ecs-cli https://amazon-ecs-cli.s3.amazonaws.com/ecs-cli-linux-amd64-latest
+      #     chmod +x ecs-cli
+      #     sudo mv ecs-cli /usr/local/bin/
 
-      - name: Deploy to ECS
-        run: |
-          # Log in to Amazon ECR
-          eval $(aws ecr get-login --no-include-email --region eu-west-1)
+      # - name: Deploy to ECS
+      #   run: |
+      #     # Log in to Amazon ECR
+      #     eval $(aws ecr get-login --no-include-email --region eu-west-1)
 
-          # Pull images from ECR (if necessary)
-          # docker-compose pull
+      #     # Pull images from ECR (if necessary)
+      #     # docker-compose pull
 
-          # Deploy services to ECS
-          ecs-cli compose up
+      #     # Deploy services to ECS
+      #     ecs-cli compose up
