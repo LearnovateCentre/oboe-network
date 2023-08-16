@@ -25,9 +25,9 @@ const getAPIurl = () => {
   const currentLocation = window.location.href;
   console.log(window.location.href);
   if (window.location.href.indexOf("oboe-network") >= 0) {
-      API_URL = currentLocation.slice(0, -1) + ":3001";
-  } else {
       API_URL = currentLocation.substring(0,currentLocation.indexOf(".com",currentLocation.indexOf(".com") + 4)) + ":3001";
+  } else {
+      API_URL = currentLocation.substring(0,currentLocation.indexOf(":",currentLocation.indexOf(":") + 1)) + ":3001";
   }
   console.log(API_URL);
   return API_URL;
