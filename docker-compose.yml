@@ -1,5 +1,9 @@
 version: '3.6'
 
+networks:
+    my-network:
+      driver: bridge
+
 services:
   db:
     image: postgres:10
@@ -13,6 +17,8 @@ services:
       - "./server/setup.sql:/docker-entrypoint-initdb.d/setup.sql"
     ports:
       - "5432:5432"
+    networks:
+      - my-network
   api:
     build: ./server
     container_name: oboe-api
@@ -20,6 +26,8 @@ services:
       - "3001:3001"
     depends_on:
       - db
+    networks:
+      - my-network
   app:
     build: ./client
     container_name: oboe-client
@@ -29,3 +37,5 @@ services:
       - api
     stdin_open: true
     tty: true
+    networks:
+      - my-network
