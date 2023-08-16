@@ -19,6 +19,20 @@ import Add from "@mui/icons-material/Add";
 import Wrapper from "../components/Wrapper";
 import FlexBetween from "../components/FlexBetween";
 
+
+const getAPIurl = () => {
+  let API_URL = '';
+  const currentLocation = window.location.href;
+  console.log(window.location.href);
+  if (window.location.href.indexOf("oboe-network") >= 0) {
+      API_URL = currentLocation.slice(0, -1) + ":3001";
+  } else {
+      API_URL = currentLocation.substring(0,currentLocation.indexOf(":",currentLocation.indexOf(":") + 1)) + ":3001";
+  }
+  console.log(API_URL);
+  return API_URL;
+}
+
 const getStatusColor = (status) => {
   switch (status) {
     case "ACTIVE":
@@ -75,7 +89,7 @@ const EmployeeProfile = () => {
   const navigate = useNavigate();
   const [employee, setEmployee] = useState(null);
   const [matchingProfiles, setMatchingProfiles] = useState([]);
-  const API_BASE_URL = "http://localhost:3001/employees";
+  const API_BASE_URL = getAPIurl() + "/employees";
 
   useEffect(() => {
     fetchEmployee();
