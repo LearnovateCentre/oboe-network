@@ -23,13 +23,17 @@ import FlexBetween from "../components/FlexBetween";
 const getAPIurl = () => {
   let API_URL = '';
   const currentLocation = window.location.href;
-  console.log(window.location.href);
-  if (window.location.href.indexOf("oboe-network") >= 0) {
+  console.log("Current Location:", window.location.href);
+  if (window.location.href.indexOf("oboe") >= 0) {
+    console.log("Condition: 'oboe' present");
+    console.log("Current Location:", currentLocation);
       API_URL = currentLocation.substring(0,currentLocation.indexOf(".com",currentLocation.indexOf(".com") + 4)) + ":3001";
   } else {
+    console.log("Condition: 'oboe' NOT present");
+    console.log("Current Location:", currentLocation);
       API_URL = currentLocation.substring(0,currentLocation.indexOf(":",currentLocation.indexOf(":") + 1)) + ":3001";
   }
-  console.log(API_URL);
+  console.log("API_URL:", API_URL);
   return API_URL;
 }
 
