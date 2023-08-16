@@ -27,11 +27,11 @@ const getAPIurl = () => {
   if (window.location.href.indexOf("oboe") >= 0) {
     console.log("Condition: 'oboe' present");
     console.log("Current Location:", currentLocation);
-      API_URL = currentLocation.substring(0,currentLocation.indexOf(".com",currentLocation.indexOf(".com") + 4)) + ":3001";
+    API_URL = currentLocation.substring(0,currentLocation.indexOf(".com") + 4) + ":3001";
   } else {
     console.log("Condition: 'oboe' NOT present");
     console.log("Current Location:", currentLocation);
-      API_URL = currentLocation.substring(0,currentLocation.indexOf(":",currentLocation.indexOf(":") + 1)) + ":3001";
+    API_URL = currentLocation.substring(0,currentLocation.indexOf(":",currentLocation.indexOf(":") + 1)) + ":3001";
   }
   console.log("API_URL:", API_URL);
   return API_URL;
