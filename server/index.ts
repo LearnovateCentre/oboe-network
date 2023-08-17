@@ -1,3 +1,5 @@
+import https from "https";
+import fs, { readFile } from 'fs';
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
@@ -28,6 +30,15 @@ app.use("/employees", employeesRoutes);
 
 // start server
 const DB_PORT = process.env.DB_PORT || 6001;
-app.listen(DB_PORT, () => {
-  console.log("Server is running!");
+
+
+https
+  .createServer(
+    {
+      key: fs.readFileSync("key.pem"),
+      cert: fs.readFileSync("certificate.pem")
+    },
+    app)
+  .listen(DB_PORT, () => {
+  console.log("Server is running at port 3001!");
 });
