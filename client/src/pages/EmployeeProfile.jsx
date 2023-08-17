@@ -26,10 +26,12 @@ const getAPIurl = () => {
   console.log("Current Location:", window.location.href);
   if (window.location.href.indexOf("oboe") >= 0) {
     // API_URL = currentLocation.substring(0,currentLocation.indexOf(".com") + 4) + ":3001";
-    API_URL = "https://oboe-network-1.service.local:3001"
+    API_URL = "https://oboe-network-1.service.local:3001";
   } else {
-    API_URL = currentLocation.substring(0,currentLocation.indexOf(":",currentLocation.indexOf(":") + 1)) + ":3001";
+    // API_URL = currentLocation.substring(0,currentLocation.indexOf(":",currentLocation.indexOf(":") + 1)) + ":3001";
+    API_URL = "https://localhost:3001";
   }
+  API_URL = "https://localhost:3001"; // Let's try the Service_Con parameter again
   console.log("API_URL:", API_URL);
   return API_URL;
 }
